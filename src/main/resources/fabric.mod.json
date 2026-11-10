@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "pinyinsearch",
+	"version": "${version}",
+	"name": "PinyinSearch",
+	"description": "在创造模式物品栏中使用全拼或首字母搜索中文物品名。纯客户端功能，服务端无需安装逻辑。",
+	"authors": [
+		"PinyinSearch"
+	],
+	"license": "CC0-1.0",
+	"icon": "assets/pinyinsearch/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.pinyinsearch.client.PinyinSearchClient"
+		]
+	},
+	"mixins": [
+		{
+			"config": "pinyinsearch.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.15.0",
+		"minecraft": "~1.20.1",
+		"java": ">=17"
+	}
+}

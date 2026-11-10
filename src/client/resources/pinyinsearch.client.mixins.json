@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "com.pinyinsearch.client.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"refmap": "client-pinyinsearch-refmap.json",
+	"client": [
+		"CreativeInventoryScreenMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
