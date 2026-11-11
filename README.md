@@ -7,6 +7,16 @@
 - 内置轻量拼音字典（约 8 KB），**不依赖 pinyin4j**、Fabric API 或其他第三方库。
 - 支持多音字，例如“音乐唱片”可用 `yinyue` 或 `yy` 搜到。
 
+## 两个 Minecraft 版本
+
+| 版本 | 目录 | Git 分支 | Java |
+| --- | --- | --- | --- |
+| Minecraft 1.20.1 | `D:\PinyinSearch` | `main` | 17 |
+| Minecraft 1.21 | `D:\PinyinSearch-1.21` | `mc-1.21` | 21 |
+
+两个目录是同一个仓库的两个 worktree。1.21 分支的 Mixin 目标、`fabric.mod.json`
+和 Java 版本都不同，不能直接互相覆盖。
+
 ## 版本
 
 > 模组版本写在两处：`gradle.properties` 的 `mod_version` 和
@@ -22,7 +32,8 @@
 | Gradle | 8.14.6 |
 | Java | 17 |
 
-> 不要把这些版本改成 1.20.4 / 1.21 的版本；本项目的 Mixin 目标名和 `SearchProvider` 方法名都是 1.20.1 Yarn 的。
+> 这是 1.20.1 分支；不要把这些版本改成 1.21。1.21 版本在 `D:\PinyinSearch-1.21`
+> 的 `mc-1.21` 分支中。
 
 ## 目录结构
 
