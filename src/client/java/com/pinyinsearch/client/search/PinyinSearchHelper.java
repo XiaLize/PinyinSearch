@@ -15,7 +15,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * 创造物品栏搜索的扩展逻辑。
+ * 创造物品栏搜索的扩展逻辑（Minecraft 1.21）。
  *
  * <p>先保留原版 {@link SearchProvider#findAll(String)} 的结果，再把“中文名拼音/首字母”
  * 命中的物品追加进去。这样英文名、物品 ID、{#标签搜索} 等原版行为都不会被破坏。</p>
@@ -25,13 +25,14 @@ public final class PinyinSearchHelper {
 	}
 
 	/**
-	 * @param provider 原版搜索提供器（Yarn 1.20.1 中方法名为 findAll）
+	 * @param provider 原版搜索提供器（Yarn 1.21 中方法名为 findAll）
 	 * @param rawQuery 搜索框内容；原版调用前已经转成小写
 	 */
 	public static List<ItemStack> search(SearchProvider<ItemStack> provider, String rawQuery) {
 		// 原版结果必须保留：英文名、命名空间 ID、标签搜索都依赖它。
 		List<ItemStack> results = new ArrayList<>(provider.findAll(rawQuery == null ? "" : rawQuery));
 
+		// 标签搜索在 Mixin 里已经按 provider 类型放行；这里保留 '#' 判断作为兜底。
 		if (rawQuery == null || rawQuery.isEmpty() || rawQuery.startsWith("#")) {
 			return results;
 		}
@@ -110,7 +111,7 @@ public final class PinyinSearchHelper {
 	/**
 	 * 收集创造模式各标签页里参与搜索的物品。
 	 *
-	 * <p>1.20.1 的 {@link ItemGroup#getSearchTabStacks()} 正是原版建立搜索索引时使用的集合，
+	 * <p>1.21 的 {@link ItemGroup#getSearchTabStacks()} 正是原版建立搜索索引时使用的集合，
 	 * 因此不会把生存模式不可获得、或当前标签页不显示的特殊物品额外加进来。</p>
 	 */
 	private static List<ItemStack> collectCreativeStacks() {

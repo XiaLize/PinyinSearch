@@ -1,11 +1,23 @@
 # PinyinSearch
 
-在 Minecraft **1.20.1 Fabric** 的创造模式物品栏中，用**全拼**或**首字母**搜索中文物品名。
+在 Minecraft **1.21 Fabric** 的创造模式物品栏中，用**全拼**或**首字母**搜索中文物品名。
 
 - 纯客户端模组，服务端不需要安装，也没有任何服务端逻辑。
 - 只注入 `CreativeInventoryScreen`，保留原版英文名 / 物品 ID / `#` 标签搜索。
 - 内置轻量拼音字典（约 8 KB），**不依赖 pinyin4j**、Fabric API 或其他第三方库。
 - 支持多音字，例如“音乐唱片”可用 `yinyue` 或 `yy` 搜到。
+
+## 两个 Minecraft 版本
+
+本项目用 Git 分支同时保留两个版本：
+
+| 版本 | 目录 | Git 分支 | Java |
+| --- | --- | --- | --- |
+| Minecraft 1.20.1 | `D:\PinyinSearch` | `main` | 17 |
+| Minecraft 1.21 | `D:\PinyinSearch-1.21` | `mc-1.21` | 21 |
+
+两个目录是同一个仓库的两个 worktree，源码和 Mixin 分别适配各自版本，不能把 1.21 的
+`build.gradle` / `fabric.mod.json` 直接拷回 1.20.1。构建产物也分别在各自的 `build/libs/` 下。
 
 ## 版本
 
@@ -15,19 +27,20 @@
 
 | 项目 | 版本 |
 | --- | --- |
-| Minecraft | 1.20.1 |
+| Minecraft | 1.21 |
 | Fabric Loader | 0.16.10 |
-| Yarn | 1.20.1+build.10 |
+| Yarn | 1.21+build.9 |
 | Loom | 1.10.5 |
 | Gradle | 8.14.6 |
-| Java | 17 |
+| Java | 21 |
 
-> 不要把这些版本改成 1.20.4 / 1.21 的版本；本项目的 Mixin 目标名和 `SearchProvider` 方法名都是 1.20.1 Yarn 的。
+> 这是 1.21 分支。Yarn 方法名、`SearchProvider` 以及 Java 版本都与 1.20.1 分支不同，
+> 不要把两个分支的构建脚本混用。
 
 ## 目录结构
 
 ```text
-PinyinSearch/
+PinyinSearch-1.21/
 ├─ build.gradle
 ├─ settings.gradle
 ├─ gradle.properties
@@ -64,14 +77,17 @@ PinyinSearch/
 
 ## 工作方式
 
-1. 原版 `CreativeInventoryScreen#search()` 在 Yarn 1.20.1 中调用
+1. 原版 `CreativeInventoryScreen#search()` 在 Yarn 1.21 中调用
    `SearchProvider#findAll(String)`（官方名 `search`，intermediary `method_4810`）。
 2. `CreativeInventoryScreenMixin` 用 `@Redirect` 只替换这一行调用。
-3. `PinyinSearchHelper` 先执行原版搜索，再把拼音命中的物品追加进去。
-4. 候选物品来自 `ItemGroups.getGroups()` 中每个标签页的 `getSearchTabStacks()`，
+3. 1.21 的普通搜索使用 `SearchManager#getItemTooltipReloadFuture()` 返回的提供器；
+   `#` 标签搜索使用 `getItemTagReloadFuture()`，并且原版会先把 `#` 去掉再调用 `findAll`。
+   Mixin 通过比较 provider 实例放行标签搜索，只对普通搜索追加拼音结果。
+4. `PinyinSearchHelper` 先执行原版搜索，再把拼音命中的物品追加进去。
+5. 候选物品来自 `ItemGroups.getGroups()` 中每个标签页的 `getSearchTabStacks()`，
    与原版建立搜索索引的来源一致，不会额外塞入生存模式不可获得的物品。
-5. 中文名通过 `PinyinDictionary` 转成无调全拼与首字母；多音字会生成多个组合。
-6. 拼音结果按匹配质量、名称长度、创造栏顺序排序；英文查询仍由原版返回。
+6. 中文名通过 `PinyinDictionary` 转成无调全拼与首字母；多音字会生成多个组合。
+7. 拼音结果按匹配质量、名称长度、创造栏顺序排序；英文查询仍由原版返回。
 
 ## 搜索示例
 
@@ -95,7 +111,7 @@ PinyinSearch/
 
 ## 构建 / 运行
 
-在 IDEA 中直接用 Minecraft Development 插件打开项目，等待 Gradle 同步完成：
+在 IDEA 中直接用 Minecraft Development 插件打开 `D:\PinyinSearch-1.21`，等待 Gradle 同步完成：
 
 ```bash
 ./gradlew build
@@ -125,8 +141,7 @@ maven {
 BMCLAPI 没有收录的 Fabric 构件（例如 Loom 插件、Yarn）会自动回退到
 `https://maven.fabricmc.net/`。
 
-`gradle.properties` 还通过 Loom 的 extra property 把 Minecraft 依赖库、资源文件
-和版本清单指向 BMCLAPI：
+`gradle.properties` 还通过 Loom 的 extra property 把 Minecraft 版本清单指向 BMCLAPI：
 
 ```properties
 loom_version_manifests=https://bmclapi2.bangbang93.com/mc/game/version_manifest_v2.json
@@ -143,18 +158,21 @@ Loom 读取版本清单后，客户端/服务端 jar 的直链仍可能来自 Mo
 
 ## 排查顺序
 
-1. **Gradle / Loom 版本**
-   - 1.20.1 请使用 Loom 1.10.5 + Gradle 8.14.6 + Java 17。
-   - 报 `Unsupported class file major version` 时，先检查 Gradle、IDEA、项目 JDK 是否都是 17。
+1. **Gradle / Loom / Java 版本**
+   - 1.21 请使用 Loom 1.10.5 + Gradle 8.14.6 + Java 21。
+   - 报 `Unsupported class file major version` 时，先检查 Gradle、IDEA、项目 JDK 是否都是 21。
 2. **Mixin 注入失败**
-   - 日志里出现 `@Redirect` 找不到目标时，先确认 Minecraft 是 1.20.1、Yarn 是 `1.20.1+build.10`。
-   - 1.20.1 的目标是 `CreativeInventoryScreen#search()` 和
+   - 日志里出现 `@Redirect` 找不到目标时，先确认 Minecraft 是 1.21、Yarn 是 `1.21+build.9`。
+   - 1.21 的目标是 `CreativeInventoryScreen#search()` 和
      `SearchProvider#findAll(Ljava/lang/String;)Ljava/util/List;`。
    - 如果更换 Yarn 版本，用 `javap` 或 IDEA 反编译确认方法名是否变化。
-3. **Yarn 映射名称变化**
+3. **`#` 标签搜索**
+   - 原版在调用 `findAll` 前会去掉 `#`，所以不能靠 `query.startsWith("#")` 判断。
+   - 本分支通过 `SearchManager#getItemTagReloadFuture()` 返回的 provider 实例识别标签搜索。
+4. **Yarn 映射名称变化**
    - `ItemGroup#getSearchTabStacks()`、`ItemGroups#getGroups()`、
-     `ItemStack#getName()` 都是 1.20.1 Yarn 名称；1.20.4/1.21 中部分 API 不同，不能直接套用。
-4. **中文名不显示 / 搜不到**
+     `ItemStack#getName()` 都是 1.21 Yarn 名称；不能直接套用 1.20.1 的 Mixin 目标。
+5. **中文名不显示 / 搜不到**
    - 确认游戏语言是简体中文。模组按 `ItemStack#getName()` 的当前语言文本建立拼音索引。
    - 如果物品名包含字典未收录的生僻字，该字会被跳过；可在 `pinyin_dict.txt` 中补一行
      `汉字<TAB>pin,yin`。
@@ -169,6 +187,6 @@ Loom 读取版本清单后，客户端/服务端 jar 的直链仍可能来自 Mo
 重	zhong,chong,tong
 ```
 
-只收录 1.20.1 原版中文物品名中出现的汉字，因此体积很小。多音字的多个读音用逗号分隔，
+字典覆盖原版中文物品名中的常用汉字，因此体积很小。多音字的多个读音用逗号分隔，
 `PinyinProfile` 会在匹配时组合。字典由公开的 [mozillazg/pinyin-data](https://github.com/mozillazg/pinyin-data)
 （MIT License）离线生成，运行时不需要联网，也没有引入 pinyin4j。

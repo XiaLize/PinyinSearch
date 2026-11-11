@@ -1,5 +1,5 @@
 plugins {
-	// 1.20.1 使用经典 fabric-loom 插件；1.7.4 与 Gradle 8.8 / Java 17 配合稳定。
+	// Minecraft 1.21 要求 Java 21。
 	id 'fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 }
@@ -37,7 +37,7 @@ loom {
 }
 
 dependencies {
-	// 严格使用 1.20.1 + Yarn；不要改成 1.20.4/1.21 的版本。
+	// 严格使用 1.21 + Yarn。
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
@@ -51,15 +51,15 @@ dependencies {
 // fabric.mod.json 里使用固定版本号，升级时同步修改 mod_version 和该文件即可。
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+	it.options.release = 21
 	it.options.encoding = 'UTF-8'
 }
 
 java {
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
