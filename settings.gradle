@@ -1,16 +1,18 @@
 pluginManagement {
 	repositories {
-		// BMCLAPI 的 Maven 镜像；不存在的构件会自动继续查找下面的官方仓库。
-		maven {
-			name = 'BMCLAPI'
-			url = 'https://bmclapi2.bangbang93.com/maven'
-		}
+		// 官方仓库优先。GitHub Actions 上 BMCLAPI 会 302 到 mirrors.qlu.edu.cn，
+		// 该镜像偶尔返回 503，放在前面会让 CI 直接失败。
 		maven {
 			name = 'Fabric'
 			url = 'https://maven.fabricmc.net/'
 		}
 		mavenCentral()
 		gradlePluginPortal()
+		// 国内网络仍可用的后备镜像；只有官方仓库找不到时才查询。
+		maven {
+			name = 'BMCLAPI'
+			url = 'https://bmclapi2.bangbang93.com/maven'
+		}
 	}
 }
 
