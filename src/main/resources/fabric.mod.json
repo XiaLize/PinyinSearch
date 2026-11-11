@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "pinyinsearch",
-	"version": "1.0.0",
+	"version": "1.0.0+mc1.21",
 	"name": "PinyinSearch",
 	"description": "在创造模式物品栏中使用全拼或首字母搜索中文物品名。纯客户端功能，服务端无需安装逻辑。",
 	"authors": [
