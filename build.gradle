@@ -12,16 +12,17 @@ base {
 }
 
 repositories {
-	// BMCLAPI 优先，缺少的 Fabric 构件会自动回退到官方仓库。
-	maven {
-		name = 'BMCLAPI'
-		url = 'https://bmclapi2.bangbang93.com/maven'
-	}
+	// 官方仓库优先，避免 GitHub Actions 上 BMCLAPI 的 503 重定向拖垮构建。
 	maven {
 		name = 'Fabric'
 		url = 'https://maven.fabricmc.net/'
 	}
 	mavenCentral()
+	// 国内网络的后备镜像；官方仓库找不到时才查询。
+	maven {
+		name = 'BMCLAPI'
+		url = 'https://bmclapi2.bangbang93.com/maven'
+	}
 }
 
 loom {
