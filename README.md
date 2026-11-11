@@ -139,19 +139,18 @@ PinyinSearch/
 `fabric.mod.json` 放在 `src/main/resources`，因为它是共同资源；Mixin 配置和拼音字典放在
 `src/client/resources`，只在客户端加载。
 
-## 关于 BMCLAPI
+## Maven 仓库与 GitHub Actions
 
-`settings.gradle` 和 `build.gradle` 都优先使用：
+`settings.gradle` 和 `build.gradle` 的仓库顺序是：
 
-```groovy
-maven {
-    name = 'BMCLAPI'
-    url = 'https://bmclapi2.bangbang93.com/maven'
-}
-```
+1. `https://maven.fabricmc.net/`（Fabric / Loom / Yarn）
+2. Maven Central
+3. Gradle Plugin Portal（仅 `pluginManagement`）
+4. BMCLAPI（国内网络后备）
 
-BMCLAPI 没有收录的 Fabric 构件（例如 Loom 插件、Yarn）会自动回退到
-`https://maven.fabricmc.net/`。
+官方仓库优先，是因为 GitHub Actions 上 BMCLAPI 会把请求 302 到
+`mirrors.qlu.edu.cn`，该镜像偶尔返回 503，放在前面会让 CI 在解析 Loom 依赖时直接失败。
+BMCLAPI 仍保留为最后的后备镜像。
 
 `gradle.properties` 通过 Loom 的 extra property 把 Minecraft 版本清单指向 BMCLAPI：
 
@@ -165,6 +164,12 @@ loom_version_manifests=https://bmclapi2.bangbang93.com/mc/game/version_manifest_
 - BMCLAPI 的 `/assets` 在并发下载时可能 TLS 握手重置，导致 `runClient` 的 `downloadAssets` 失败。
 
 因此 Minecraft 依赖库和资源文件仍从官方地址获取，版本清单走 BMCLAPI。
+
+GitHub Actions 工作流在 `.github/workflows/build.yml`，每个分支各有一份：
+
+- `main` 使用 Java 17；
+- `mc-1.21`、`mc-1.21.2`、`mc-1.21.4` 使用 Java 21；
+- push 或 PR 时执行 `./gradlew build`，并把 `build/libs/` 上传为 artifact。
 
 ## 排查顺序
 
