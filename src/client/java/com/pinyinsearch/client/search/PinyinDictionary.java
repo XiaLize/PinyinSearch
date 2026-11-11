@@ -16,7 +16,7 @@ import java.util.Map;
  *
  * <p>资源文件：{@code assets/pinyinsearch/pinyin_dict.txt}。
  * 格式为每行 {@code 汉字<TAB>读音1,读音2}，例如：{@code 乐	le,yue}。
- * 字典只收录 1.20.1 原版中文物品名中出现的汉字，体积很小，不依赖 pinyin4j。</p>
+ * 字典收录 1.21 原版中文物品名（含地图、盔甲纹饰等）中出现的汉字，体积很小，不依赖 pinyin4j。</p>
  *
  * <p>多音字会保留多个读音，匹配时由 {@link PinyinProfile} 生成所有组合。</p>
  */
