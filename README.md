@@ -9,13 +9,17 @@
 
 ## 版本
 
+> 模组版本写在两处：`gradle.properties` 的 `mod_version` 和
+> `src/main/resources/fabric.mod.json` 的 `version`。升级版本时请同时修改，
+> 以避免 IDEA 对 `processResources` 动态过滤的误报。
+
 | 项目 | 版本 |
 | --- | --- |
 | Minecraft | 1.20.1 |
 | Fabric Loader | 0.16.10 |
 | Yarn | 1.20.1+build.10 |
-| Loom | 1.7.4 |
-| Gradle | 8.8 |
+| Loom | 1.10.5 |
+| Gradle | 8.14.6 |
 | Java | 17 |
 
 > 不要把这些版本改成 1.20.4 / 1.21 的版本；本项目的 Mixin 目标名和 `SearchProvider` 方法名都是 1.20.1 Yarn 的。
@@ -125,21 +129,22 @@ BMCLAPI 没有收录的 Fabric 构件（例如 Loom 插件、Yarn）会自动回
 和版本清单指向 BMCLAPI：
 
 ```properties
-loom_resources_base=https://bmclapi2.bangbang93.com/assets/
 loom_version_manifests=https://bmclapi2.bangbang93.com/mc/game/version_manifest_v2.json
 ```
 
-这里刻意没有覆盖 `loom_libraries_base`：BMCLAPI 对部分 Mojang 库会 302 到带签名的
-`download.mocdn.net` 地址，Gradle 的 HEAD 请求可能返回 403，导致依赖解析失败。
-Minecraft 依赖库仍从官方 `libraries.minecraft.net` / Maven 仓库获取。
+这里刻意没有覆盖 `loom_libraries_base` 和 `loom_resources_base`：
 
+- BMCLAPI 对部分 Mojang 库会 302 到带签名的 `download.mocdn.net` 地址，Gradle 的 HEAD 请求可能返回 403；
+- BMCLAPI 的 `/assets` 在并发下载时可能 TLS 握手重置，导致 `runClient` 的 `downloadAssets` 失败。
+
+因此 Minecraft 依赖库和资源文件仍从官方地址获取，版本清单走 BMCLAPI。
 Loom 读取版本清单后，客户端/服务端 jar 的直链仍可能来自 Mojang；如果所在网络访问
 `piston-data.mojang.com` 困难，需要自行配置系统代理，或预先下载到 Loom 缓存。
 
 ## 排查顺序
 
 1. **Gradle / Loom 版本**
-   - 1.20.1 请使用 Loom 1.7.4 + Gradle 8.8 + Java 17。
+   - 1.20.1 请使用 Loom 1.10.5 + Gradle 8.14.6 + Java 17。
    - 报 `Unsupported class file major version` 时，先检查 Gradle、IDEA、项目 JDK 是否都是 17。
 2. **Mixin 注入失败**
    - 日志里出现 `@Redirect` 找不到目标时，先确认 Minecraft 是 1.20.1、Yarn 是 `1.20.1+build.10`。

@@ -45,14 +45,10 @@ dependencies {
 	// 本模组是纯客户端 Mixin，不需要 Fabric API 或其他第三方库。
 }
 
-processResources {
-	def version = project.version
-	inputs.property "version", version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": version
-	}
-}
+// 不在这里做 processResources 动态过滤。
+// IDEA 对 filesMatching + expand 的 CopyAction 解析不完整，会报
+// "Cannot resolve resource filtering of MatchingCopyAction"。
+// fabric.mod.json 里使用固定版本号，升级时同步修改 mod_version 和该文件即可。
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 17
